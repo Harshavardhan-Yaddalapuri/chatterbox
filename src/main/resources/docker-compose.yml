@@ -4,7 +4,7 @@ services:
     image: postgres:latest
     environment:
       POSTGRES_DB: chatter_box_db
-      POSTGRES_USER: chatter_admin
-      POSTGRES_PASSWORD: chatter_admin
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
