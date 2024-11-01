@@ -8,10 +8,12 @@ import com.noobprogrammer.chatterbox.models.User;
 import com.noobprogrammer.chatterbox.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,34 +21,39 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
 
     public void registerUser(UserRequest userRequest) throws UserAlreadyExistsException {
 
         log.info("Entering UserService.registerUser()");
-        User newUser = User.builder().username(userRequest.getUsername()).password(userRequest.getPassword()).firstName(userRequest.getFirstName()).lastName(userRequest.getLastName()).email(userRequest.getEmail()).build();
-
-        if (null == userRepository.findByUsername(userRequest.getUsername())) {
-            userRepository.save(newUser);
-            log.info("User details saved successfully: {}", newUser.getUsername());
-            log.info("Exiting UserService.registerUser()");
-        } else{
-            log.error("User with the username: {} already exists, please try a different username", userRequest.getUsername());
+        if (userRepository.existsByUsername(userRequest.getUsername()) || userRepository.existsByEmail(userRequest.getEmail())) {
             throw new UserAlreadyExistsException();
         }
+
+        String encryptedPassword = bCryptPasswordEncoder.encode(userRequest.getPassword());
+        User newUser = User.builder()
+                .username(userRequest.getUsername())
+                .password(encryptedPassword)
+                .firstName(userRequest.getFirstName())
+                .lastName(userRequest.getLastName())
+                .email(userRequest.getEmail())
+                .build();
+
+        userRepository.save(newUser);
+        log.info("User registered successfully: {}", newUser.getUsername());
     }
 
     public void loginUser(UserRequest userRequest) throws UserNotFoundException {
 
         log.info("Entering UserService.loginUser()");
-        User user = userRepository.findByUsername(userRequest.getUsername());
+        User user = userRepository.findByUsername(userRequest.getUsername())
+                .orElseThrow(() -> new UserNotFoundException("Invalid username or password"));
 
-        if (user.getUsername().equals(userRequest.getUsername()) && userRequest.getPassword().equals(user.getPassword())) {
-            log.info("User found: {}", user.getUsername());
-            log.info("User logged in successfully");
-        } else {
-            log.error("User not found: {}", userRequest.getUsername());
-            throw new UserNotFoundException();
+        if (!bCryptPasswordEncoder.matches(userRequest.getPassword(), user.getPassword())) {
+            throw new UserNotFoundException("Invalid username or password");
         }
+
+        log.info("User logged in successfully: {}", user.getUsername());
 
     }
 

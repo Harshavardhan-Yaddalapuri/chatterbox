@@ -7,6 +7,8 @@ import com.noobprogrammer.chatterbox.exceptions.UserNotFoundException;
 import com.noobprogrammer.chatterbox.services.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,26 +22,35 @@ public class UserController {
    private final UserService userService;
 
     @PostMapping("/register")
-    public void registerUser(@RequestBody UserRequest userRequest) throws UserAlreadyExistsException {
+    public ResponseEntity<String> registerUser(@RequestBody UserRequest userRequest) {
 
         log.info("Entering UserController.registerUser method");
-        userService.registerUser(userRequest);
-        log.info("Exiting UserController.registerUser method");
+        try {
+            userService.registerUser(userRequest);
+            log.info("Exiting UserController.registerUser method ### User ==> {} registered successfully", userRequest.getUsername());
+            return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully.");
+        } catch (UserAlreadyExistsException e) {
+            log.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Username or email already exists.");
+        }
     }
 
 
     @PostMapping("/login")
-    public void loginUser(@RequestBody UserRequest userRequest) throws UserNotFoundException {
+    public ResponseEntity<String> loginUser(@RequestBody UserRequest userRequest) throws UserNotFoundException {
         log.info("Entering UserController.loginUser method");
-        userService.loginUser(userRequest);
-        log.info("Exiting UserController.loginUser method");
+        try {
+            userService.loginUser(userRequest);
+            return ResponseEntity.ok("Login successful.");
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password.");
+        }
     }
 
     @GetMapping
-    public List<UserResponse> getAllUsers(){
-
+    public ResponseEntity<List<UserResponse>> getAllUsers(){
         log.info("Entering UserController.getAllUsers method");
-        return userService.getAllUsers();
-
+        List<UserResponse> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
     }
 }
