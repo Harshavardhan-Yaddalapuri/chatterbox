@@ -25,7 +25,7 @@ public class UserService {
         log.info("Entering UserService.registerUser()");
         User newUser = User.builder().username(userRequest.getUsername()).password(userRequest.getPassword()).firstName(userRequest.getFirstName()).lastName(userRequest.getLastName()).email(userRequest.getEmail()).build();
 
-        if (null != userRepository.findByUsername(userRequest.getUsername())) {
+        if (null == userRepository.findByUsername(userRequest.getUsername())) {
             userRepository.save(newUser);
             log.info("User details saved successfully: {}", newUser.getUsername());
             log.info("Exiting UserService.registerUser()");
