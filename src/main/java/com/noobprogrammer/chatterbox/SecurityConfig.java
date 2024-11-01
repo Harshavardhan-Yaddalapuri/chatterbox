@@ -23,8 +23,9 @@ public class SecurityConfig {
         http.
                 csrf(AbstractHttpConfigurer::disable) // Disable CSRF protection for simplicity during development
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/users/register", "/api/v1/users/login").permitAll() // Allow access to these endpoints without authentication
-                        .anyRequest().authenticated()); // All other requests require authentication
+//                        .requestMatchers("/api/v1/users/register", "/api/v1/users/login").permitAll() // Allow access to these endpoints without authentication
+//                        .anyRequest().authenticated()); // All other requests require authentication
+                        .anyRequest().permitAll());
         return http.build();
     }
 }
