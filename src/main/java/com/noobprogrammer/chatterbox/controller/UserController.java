@@ -17,29 +17,27 @@ import java.util.List;
 @Slf4j
 public class UserController {
 
-   private final UserService userService;
+    private final UserService userService;
 
     @PostMapping("/register")
     public void registerUser(@RequestBody UserRequest userRequest) throws UserAlreadyExistsException {
-
-        log.info("Entering UserController.registerUser method");
+        log.info("Entering UserController.registerUser method with userRequest: {}", userRequest);
         userService.registerUser(userRequest);
         log.info("Exiting UserController.registerUser method");
     }
 
-
     @PostMapping("/login")
     public void loginUser(@RequestBody UserRequest userRequest) throws UserNotFoundException {
-        log.info("Entering UserController.loginUser method");
+        log.info("Entering UserController.loginUser method with userRequest: {}", userRequest);
         userService.loginUser(userRequest);
         log.info("Exiting UserController.loginUser method");
     }
 
     @GetMapping
-    public List<UserResponse> getAllUsers(){
-
+    public List<UserResponse> getAllUsers() {
         log.info("Entering UserController.getAllUsers method");
-        return userService.getAllUsers();
-
+        List<UserResponse> users = userService.getAllUsers();
+        log.info("Exiting UserController.getAllUsers method with users: {}", users);
+        return users;
     }
 }
