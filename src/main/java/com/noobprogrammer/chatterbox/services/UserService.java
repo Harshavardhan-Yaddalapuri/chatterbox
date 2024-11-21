@@ -31,6 +31,7 @@ public class UserService {
             throw new UserAlreadyExistsException();
         }
 
+
         String encryptedPassword = passwordEncoder.encode(userRequest.getPassword());
         User newUser = User.builder()
                 .username(userRequest.getUsername())
@@ -50,7 +51,9 @@ public class UserService {
         User user = userRepository.findByUsername(userRequest.getUsername())
                 .orElseThrow(() -> new UserNotFoundException("Invalid username or password"));
 
+
         if (!passwordEncoder.matches(userRequest.getPassword(), user.getPassword())) {
+
             throw new UserNotFoundException("Invalid username or password");
         }
 

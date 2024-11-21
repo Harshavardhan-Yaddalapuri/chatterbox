@@ -23,6 +23,7 @@ public class UserController {
    private final UserService userService;
 
     @PostMapping("/register")
+
     public ResponseEntity<String> registerUser(@Valid @RequestBody UserRequest userRequest) {
 
         log.info("Entering UserController.registerUser method");
@@ -39,6 +40,7 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<String> loginUser(@Valid @RequestBody UserRequest userRequest) throws UserNotFoundException {
+
         log.info("Entering UserController.loginUser method");
         try {
             userService.loginUser(userRequest);
