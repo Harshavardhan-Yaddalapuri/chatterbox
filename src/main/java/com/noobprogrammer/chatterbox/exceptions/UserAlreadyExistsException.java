@@ -1,7 +1,7 @@
 package com.noobprogrammer.chatterbox.exceptions;
 
-public class UserAlreadyExistsException extends Throwable {
+public class UserAlreadyExistsException extends RuntimeException {
     public UserAlreadyExistsException() {
-        super("User is already exists");
+        super("Username already exists");
     }
 }

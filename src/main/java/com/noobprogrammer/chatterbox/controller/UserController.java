@@ -5,8 +5,11 @@ import com.noobprogrammer.chatterbox.dto.UserResponse;
 import com.noobprogrammer.chatterbox.exceptions.UserAlreadyExistsException;
 import com.noobprogrammer.chatterbox.exceptions.UserNotFoundException;
 import com.noobprogrammer.chatterbox.services.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,27 +20,40 @@ import java.util.List;
 @Slf4j
 public class UserController {
 
-    private final UserService userService;
+   private final UserService userService;
 
     @PostMapping("/register")
-    public void registerUser(@RequestBody UserRequest userRequest) throws UserAlreadyExistsException {
-        log.info("Entering UserController.registerUser method with userRequest: {}", userRequest);
-        userService.registerUser(userRequest);
-        log.info("Exiting UserController.registerUser method");
+
+    public ResponseEntity<String> registerUser(@Valid @RequestBody UserRequest userRequest) {
+
+        log.info("Entering UserController.registerUser method");
+        try {
+            userService.registerUser(userRequest);
+            log.info("Exiting UserController.registerUser method ### User ==> {} registered successfully", userRequest.getUsername());
+            return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully.");
+        } catch (UserAlreadyExistsException e) {
+            log.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Username or email already exists.");
+        }
     }
 
+
     @PostMapping("/login")
-    public void loginUser(@RequestBody UserRequest userRequest) throws UserNotFoundException {
-        log.info("Entering UserController.loginUser method with userRequest: {}", userRequest);
-        userService.loginUser(userRequest);
-        log.info("Exiting UserController.loginUser method");
+    public ResponseEntity<String> loginUser(@Valid @RequestBody UserRequest userRequest) throws UserNotFoundException {
+
+        log.info("Entering UserController.loginUser method");
+        try {
+            userService.loginUser(userRequest);
+            return ResponseEntity.ok("Login successful.");
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password.");
+        }
     }
 
     @GetMapping
-    public List<UserResponse> getAllUsers() {
+    public ResponseEntity<List<UserResponse>> getAllUsers(){
         log.info("Entering UserController.getAllUsers method");
         List<UserResponse> users = userService.getAllUsers();
-        log.info("Exiting UserController.getAllUsers method with users: {}", users);
-        return users;
+        return ResponseEntity.ok(users);
     }
 }
