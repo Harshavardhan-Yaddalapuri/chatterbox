@@ -5,6 +5,7 @@ import com.noobprogrammer.chatterbox.models.FriendRequest;
 import com.noobprogrammer.chatterbox.models.User;
 import com.noobprogrammer.chatterbox.repository.FriendRequestRepository;
 import com.noobprogrammer.chatterbox.repository.UserRepository;
+import com.noobprogrammer.chatterbox.utils.RequestStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ public class FriendService {
         return userRepository.findByUsernameContainingIgnoreCase(username);
     }
 
-    public void sendFriendRequest(String senderId, String receiverId) {
+    public void sendFriendRequest(String senderId, String receiverId) throws UserNotFoundException {
         log.info("User {} is sending a friend request to user {}", senderId, receiverId);
 
         if (senderId.equals(receiverId)) {
@@ -49,19 +50,25 @@ public class FriendService {
                 .receiver(receiver)
                 .build();
 
+        //TODO: Implement the method to check if the receiver has blocked the sender or not, if yes, throw an exception
+
         friendRequestRepository.save(friendRequest);
         log.info("Friend request sent from {} to {}", sender.getUsername(), receiver.getUsername());
     }
 
     // Method to search for users by username
     public List<FriendRequest> getPendingRequests(Long userId) {
-        return friendRequestRepository.findByReceiverIdAndAcceptedFalse(userId);
+        return friendRequestRepository.findByReceiverIdAndStatus(userId, RequestStatus.PENDING);
     }
 
     // Method to accept a friend request
     public void acceptFriendRequest(Long requestId){
     FriendRequest request = friendRequestRepository.findById(requestId).orElseThrow(() -> new RuntimeException("Request not found"));
-    request.setAccepted(true);
+    request.setStatus(RequestStatus.ACCEPTED);
     friendRequestRepository.save(request);
     }
+
+    //TODO: Implement the method to reject a friend request
+    //TODO: Implement the method to block a friend request
+
 }
