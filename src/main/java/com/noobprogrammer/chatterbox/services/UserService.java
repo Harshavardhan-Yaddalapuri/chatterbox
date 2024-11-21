@@ -9,6 +9,7 @@ import com.noobprogrammer.chatterbox.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 
@@ -21,7 +22,7 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder passwordEncoder;
 
     public void registerUser(UserRequest userRequest) throws UserAlreadyExistsException {
 
@@ -30,7 +31,8 @@ public class UserService {
             throw new UserAlreadyExistsException();
         }
 
-        String encryptedPassword = bCryptPasswordEncoder.encode(userRequest.getPassword());
+
+        String encryptedPassword = passwordEncoder.encode(userRequest.getPassword());
         User newUser = User.builder()
                 .username(userRequest.getUsername())
                 .password(encryptedPassword)
@@ -49,7 +51,9 @@ public class UserService {
         User user = userRepository.findByUsername(userRequest.getUsername())
                 .orElseThrow(() -> new UserNotFoundException("Invalid username or password"));
 
-        if (!bCryptPasswordEncoder.matches(userRequest.getPassword(), user.getPassword())) {
+
+        if (!passwordEncoder.matches(userRequest.getPassword(), user.getPassword())) {
+
             throw new UserNotFoundException("Invalid username or password");
         }
 

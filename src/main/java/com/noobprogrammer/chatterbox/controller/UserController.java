@@ -5,6 +5,7 @@ import com.noobprogrammer.chatterbox.dto.UserResponse;
 import com.noobprogrammer.chatterbox.exceptions.UserAlreadyExistsException;
 import com.noobprogrammer.chatterbox.exceptions.UserNotFoundException;
 import com.noobprogrammer.chatterbox.services.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -22,7 +23,8 @@ public class UserController {
    private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody UserRequest userRequest) {
+
+    public ResponseEntity<String> registerUser(@Valid @RequestBody UserRequest userRequest) {
 
         log.info("Entering UserController.registerUser method");
         try {
@@ -37,7 +39,8 @@ public class UserController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@RequestBody UserRequest userRequest) throws UserNotFoundException {
+    public ResponseEntity<String> loginUser(@Valid @RequestBody UserRequest userRequest) throws UserNotFoundException {
+
         log.info("Entering UserController.loginUser method");
         try {
             userService.loginUser(userRequest);
