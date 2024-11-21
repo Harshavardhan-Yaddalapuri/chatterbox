@@ -3,8 +3,10 @@ package com.noobprogrammer.chatterbox.controller;
 import com.noobprogrammer.chatterbox.dto.UserLoginRequest;
 import com.noobprogrammer.chatterbox.dto.UserRequest;
 import com.noobprogrammer.chatterbox.dto.UserResponse;
+import com.noobprogrammer.chatterbox.dto.UserUpdateRequest;
 import com.noobprogrammer.chatterbox.exceptions.UserAlreadyExistsException;
 import com.noobprogrammer.chatterbox.exceptions.UserNotFoundException;
+import com.noobprogrammer.chatterbox.repository.UserRepository;
 import com.noobprogrammer.chatterbox.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import java.util.List;
 public class UserController {
 
    private final UserService userService;
+    private final UserRepository userRepository;
 
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@Valid @RequestBody UserRequest userRequest) {
@@ -58,7 +61,7 @@ public class UserController {
     }
 
     //TODO: Implement the method to get a user by username or userId
-    @GetMapping("/user/{id}")
+    @GetMapping("/id/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id){
         log.info("Entering UserController.getUserById method");
         UserResponse user = userService.getUserbyUserId(id);
@@ -67,7 +70,7 @@ public class UserController {
     }
 
 
-    @GetMapping("/user/{username}")
+    @GetMapping("/username/{username}")
     public ResponseEntity<UserResponse> getUserByUsername(@PathVariable String username){
         log.info("Entering UserController.getUserByUsername method");
         UserResponse user = userService.getUserbyUsername(username);
@@ -76,5 +79,28 @@ public class UserController {
     }
 
     //TODO: Implement the method to update a user's details
+    @PutMapping("/id/{id}")
+    public ResponseEntity<String> updateUserDetails(@PathVariable Long id, @Valid @RequestBody UserUpdateRequest userUpdateRequest) {
+        log.info("Entering UserController.updateUserDetails method");
+        try {
+            log.info("Update user details: {}, {} ", userUpdateRequest.getFirstName(), userUpdateRequest.getLastName());
+            userService.updateUser(id, userUpdateRequest);
+            log.info("Exiting UserController.updateUserDetails method ### User ==> {},{},{} updated successfully", id, userUpdateRequest.getFirstName(), userUpdateRequest.getLastName());
+            return ResponseEntity.ok("User details updated successfully.");
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
     //TODO: Implement the method to delete a user
+    @DeleteMapping("/id/{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable Long id){
+        log.info("Entering UserController.deleteUser method");
+        try{
+            userService.deleteUser(id);
+            log.info("Exiting UserController.deleteUser method ### User ==> {} deleted successfully", id);
+            return ResponseEntity.ok("User deleted successfully.");
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
 }

@@ -3,16 +3,16 @@ package com.noobprogrammer.chatterbox.services;
 import com.noobprogrammer.chatterbox.dto.UserLoginRequest;
 import com.noobprogrammer.chatterbox.dto.UserRequest;
 import com.noobprogrammer.chatterbox.dto.UserResponse;
+import com.noobprogrammer.chatterbox.dto.UserUpdateRequest;
 import com.noobprogrammer.chatterbox.exceptions.UserAlreadyExistsException;
 import com.noobprogrammer.chatterbox.exceptions.UserNotFoundException;
 import com.noobprogrammer.chatterbox.models.User;
 import com.noobprogrammer.chatterbox.repository.UserRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 
 import java.util.List;
 import java.util.Optional;
@@ -91,5 +91,30 @@ public class UserService {
         } else {
             throw new UserNotFoundException("User not found with username: " + username);
         }
+    }
+
+    public void updateUser(Long id, @Valid UserUpdateRequest userUpdateRequest) {
+        log.info("Entering UserService.updateUser method");
+        Optional<User> user = userRepository.findById(id);
+        if(user.isPresent()){
+            log.info("Update user with user ID: {}", user.get().getId());
+            user.get().setFirstName(userUpdateRequest.getFirstName());
+            user.get().setLastName(userUpdateRequest.getLastName());
+
+            userRepository.save(user.get());
+            log.info("User updated successfully: {}", user.get().getUsername());
+        }else
+            throw new UserNotFoundException("Couldn't update, user not found with id: " + id);
+    }
+
+    public void deleteUser(Long id) {
+        log.info("Entering UserService.deleteUser method");
+        Optional<User> user = userRepository.findById(id);
+        if(user.isPresent()){
+            log.info("delete user with user ID: {}", user.get().getId());
+            userRepository.delete(user.get());
+            log.info("User deleted successfully: {}", user.get().getUsername());
+        }else
+            throw new UserNotFoundException("Couldn't delete, user not found with id: " + id);
     }
 }
