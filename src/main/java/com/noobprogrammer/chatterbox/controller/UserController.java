@@ -1,5 +1,6 @@
 package com.noobprogrammer.chatterbox.controller;
 
+import com.noobprogrammer.chatterbox.dto.UserLoginRequest;
 import com.noobprogrammer.chatterbox.dto.UserRequest;
 import com.noobprogrammer.chatterbox.dto.UserResponse;
 import com.noobprogrammer.chatterbox.exceptions.UserAlreadyExistsException;
@@ -23,7 +24,6 @@ public class UserController {
    private final UserService userService;
 
     @PostMapping("/register")
-
     public ResponseEntity<String> registerUser(@Valid @RequestBody UserRequest userRequest) {
 
         log.info("Entering UserController.registerUser method");
@@ -39,11 +39,11 @@ public class UserController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@Valid @RequestBody UserRequest userRequest) throws UserNotFoundException {
+    public ResponseEntity<String> loginUser(@Valid @RequestBody UserLoginRequest userLoginRequest) throws UserNotFoundException {
 
         log.info("Entering UserController.loginUser method");
         try {
-            userService.loginUser(userRequest);
+            userService.loginUser(userLoginRequest);
             return ResponseEntity.ok("Login successful.");
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password.");
@@ -56,4 +56,25 @@ public class UserController {
         List<UserResponse> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
     }
+
+    //TODO: Implement the method to get a user by username or userId
+    @GetMapping("/user/{id}")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id){
+        log.info("Entering UserController.getUserById method");
+        UserResponse user = userService.getUserbyUserId(id);
+        log.info("Exiting UserController.getUserById method ### User ==> {} retrieved successfully", user.getUsername());
+        return ResponseEntity.ok(user);
+    }
+
+
+    @GetMapping("/user/{username}")
+    public ResponseEntity<UserResponse> getUserByUsername(@PathVariable String username){
+        log.info("Entering UserController.getUserByUsername method");
+        UserResponse user = userService.getUserbyUsername(username);
+        log.info("Exiting UserController.getUserByUsername method ### User ==> {} retrieved successfully", user.getUsername());
+        return ResponseEntity.ok(user);
+    }
+
+    //TODO: Implement the method to update a user's details
+    //TODO: Implement the method to delete a user
 }

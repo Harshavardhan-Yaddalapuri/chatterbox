@@ -1,5 +1,6 @@
 package com.noobprogrammer.chatterbox.services;
 
+import com.noobprogrammer.chatterbox.dto.UserLoginRequest;
 import com.noobprogrammer.chatterbox.dto.UserRequest;
 import com.noobprogrammer.chatterbox.dto.UserResponse;
 import com.noobprogrammer.chatterbox.exceptions.UserAlreadyExistsException;
@@ -33,26 +34,19 @@ public class UserService {
 
 
         String encryptedPassword = passwordEncoder.encode(userRequest.getPassword());
-        User newUser = User.builder()
-                .username(userRequest.getUsername())
-                .password(encryptedPassword)
-                .firstName(userRequest.getFirstName())
-                .lastName(userRequest.getLastName())
-                .email(userRequest.getEmail())
-                .build();
+        User newUser = User.builder().username(userRequest.getUsername()).password(encryptedPassword).firstName(userRequest.getFirstName()).lastName(userRequest.getLastName()).email(userRequest.getEmail()).build();
 
         userRepository.save(newUser);
         log.info("User registered successfully: {}", newUser.getUsername());
     }
 
-    public void loginUser(UserRequest userRequest) throws UserNotFoundException {
+    public void loginUser(UserLoginRequest userLoginRequest) throws UserNotFoundException {
 
         log.info("Entering UserService.loginUser()");
-        User user = userRepository.findByUsername(userRequest.getUsername())
-                .orElseThrow(() -> new UserNotFoundException("Invalid username or password"));
+        User user = userRepository.findByUsername(userLoginRequest.getUsername()).orElseThrow(() -> new UserNotFoundException("Invalid username or password"));
 
 
-        if (!passwordEncoder.matches(userRequest.getPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(userLoginRequest.getPassword(), user.getPassword())) {
 
             throw new UserNotFoundException("Invalid username or password");
         }
@@ -74,5 +68,28 @@ public class UserService {
 
     private UserResponse mapToUserResponse(User user) {
         return UserResponse.builder().id(user.getId()).username(user.getUsername()).firstName(user.getFirstName()).lastName(user.getLastName()).email(user.getEmail()).build();
+    }
+
+
+    public UserResponse getUserbyUserId(Long id) {
+        log.info("Entering UserService.getUserbyUserId()");
+        Optional<User> user = userRepository.findById(id);
+        if (user.isPresent()) {
+            log.info("User found with id: {}", user.get().getId());
+            return mapToUserResponse(user.get());
+        } else {
+            throw new UserNotFoundException("User not found with id: " + id);
+        }
+    }
+
+    public UserResponse getUserbyUsername(String username) {
+        log.info("Entering UserService.getUserbyUsername()");
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isPresent()) {
+            log.info("User found with username: {}", user.get().getUsername());
+            return mapToUserResponse(user.get());
+        } else {
+            throw new UserNotFoundException("User not found with username: " + username);
+        }
     }
 }
